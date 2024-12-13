@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     tags:
-      - 'v*' # Trigger on version tags, e.g., v1.0.0
+      - 'v*'
 
 jobs:
   build:
@@ -29,7 +29,7 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t registry-ce4439d8b9-ip-lookup.apps.ir-central1.arvancaas.ir/ip-lookup:${{ env.VERSION }} .
+        docker build -t registry-ce4439d8b9-ip-lookup.apps.ir-central1.arvancaas.ir/ip-lookup:${{ env.VERSION }} ip-lookup/
         docker push registry-ce4439d8b9-ip-lookup.apps.ir-central1.arvancaas.ir/ip-lookup:${{ env.VERSION }}
 
   deploy:
@@ -58,8 +58,12 @@ jobs:
         export KUBECONFIG=kubeconfig.yaml
 
     - name: Deploy with Helm
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DB_PASS: ${{ secrets.DB_PASS }}
       run: |
         helm upgrade --install ip-lookup ./helm-chart \
+          --set secret.DATABASE_URL=$DATABASE_URL \
+          --set secret.DB_PASS=$DB_PASS \
           --set image.repository=registry-ce4439d8b9-ip-lookup.apps.ir-central1.arvancaas.ir/ip-lookup \
           --set image.tag=${{ env.VERSION }}
-
