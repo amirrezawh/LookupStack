@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup-cron
+  namespace: postgres-operator
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: postgres-backup
+            image: docker.arvancloud.ir/postgres:16
+            env:
+              - name: MINIO_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: minio-credentials
+                    key: access-key
+              - name: MINIO_SECRET_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: minio-credentials
+                    key: secret-key
+              - name: ENABLE_MINIO_UPLOAD
+                value: "false"
+              - name: POSTGRES_URI
+                valueFrom:
+                  secretKeyRef:
+                    name: karnameh-pg-pguser-karnameh-pg
+                    key: uri
+
+            args:
+            - /bin/sh
+            - -c
+            - |
+              BACKUP_FILE="/backup/karnameh-pg-backup-$(date +%F_%T).sql"
+              echo "Starting backup..."
+              
+              pg_dump "$POSTGRES_URI" > $BACKUP_FILE
+
+              if [ "$ENABLE_MINIO_UPLOAD" = "true" ]; then
+                curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+                chmod +x mc
+                mv mc /usr/local/bin/
+                mc alias set minio http://minio-service:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+                mc cp $BACKUP_FILE minio/your-bucket-name/$(basename $BACKUP_FILE)
+              fi
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: postgres-backup-pvc
+          restartPolicy: OnFailure
