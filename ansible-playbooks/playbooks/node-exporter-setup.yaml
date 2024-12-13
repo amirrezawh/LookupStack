@@ -1,0 +1,47 @@
+---
+- name: Setup node-exporter service
+  hosts: all
+  vars:
+    version: 1.8.2
+  gather_facts: no
+ 
+  tasks:
+    - name: Install wget package
+      apt:
+        name: wget
+        state: latest
+        update_cache: yes
+      become: yes
+ 
+    - name: Download node exporter
+      command: wget https://github.com/prometheus/node_exporter/releases/download/v{{version}}/node_exporter-{{version}}.linux-amd64.tar.gz
+ 
+    - name: Extract node exporter archieve
+      command: tar xvfz node_exporter-{{version}}.linux-amd64.tar.gz
+ 
+    - name: Move node-exporter to /usr/local/bin
+      command: mv node_exporter-{{version}}.linux-amd64/node_exporter /usr/local/bin/
+      become: yes
+ 
+    - name: Create node_exporter user
+      user:
+        name: node_exporter
+        system: yes
+        create_home: no
+        shell: /bin/false
+      become: yes
+ 
+    - name: Copy node_exporter.service file to /etc/systemd/system
+      copy:
+        src: ./node-exporter.service
+        dest: /etc/systemd/system/node_exporter.service
+        mode: '0644'
+      become: yes
+ 
+    - name: Restart and enable node exporter service
+      systemd:
+        name: node_exporter
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      become: yes
