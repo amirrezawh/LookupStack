@@ -1,0 +1,886 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: warnings
+      folder: Warnings
+      interval: 1m
+      rules:
+        - uid: de6sl0ty78flsb
+          title: IP Lookup total requests
+          condition: B
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: rate(ip_lookup_requests_total[5m])
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 100
+                            - 10
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: B
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 5m
+          annotations:
+            summary: There are many requests many requests for ip-lookup service
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: ce6sqla2etjwgb
+          title: Memory Basic
+          condition: G
+          data:
+            - refId: B
+              relativeTimeRange:
+                from: 86400
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: ee6ph590sov7ke
+                editorMode: code
+                expr: node_memory_MemTotal_bytes{instance="5.34.205.88:9100",job="node-exporter"} - node_memory_MemFree_bytes{instance="5.34.205.88:9100",job="node-exporter"} - (node_memory_Cached_bytes{instance="5.34.205.88:9100",job="node-exporter"} + node_memory_Buffers_bytes{instance="5.34.205.88:9100",job="node-exporter"} + node_memory_SReclaimable_bytes{instance="5.34.205.88:9100",job="node-exporter"})
+                format: time_series
+                instant: true
+                interval: ""
+                intervalFactor: 1
+                intervalMs: 15000
+                legendFormat: RAM Used
+                maxDataPoints: 43200
+                range: false
+                refId: B
+                step: 240
+            - refId: F
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - F
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: F
+                settings:
+                    mode: replaceNN
+                    replaceWithValue: 0
+                type: reduce
+            - refId: G
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 1.2e+09
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - G
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: F
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: G
+                type: threshold
+          dashboardUid: rYdddlPWk
+          panelId: 78
+          noDataState: OK
+          execErrState: OK
+          for: 5m
+          annotations:
+            __dashboardUid__: rYdddlPWk
+            __panelId__: "78"
+            summary: 'High memory usage detected, node: {{ $labels.instance }}'
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+    - orgId: 1
+      name: Criticals
+      folder: Criticals
+      interval: 1m
+      rules:
+        - uid: ce6slhyjkf9xcd
+          title: Total memory usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(kube_pod_container_resource_requests{resource="memory"}) / sum(kube_node_status_allocatable{resource="memory"})
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.6
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Total memory usage in the cluster is more than 60%
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: be6slt4t9r20wd
+          title: Total pod requested
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(kube_pod_info) / sum(kube_node_status_allocatable{resource="pods"})
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.7
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 2m
+          annotations:
+            summary: Total pod requests are more than 70% in the cluster
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: ae6sm5ip7qz9cc
+          title: Total cpu usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(kube_pod_container_resource_requests{resource="cpu"})/ sum(kube_node_status_allocatable{resource="cpu"})
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.7
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Total cpu usage is more than 70% in the cluster
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: fe6smikxy3tvkd
+          title: IP Lookup total failed requests
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: rate(ip_lookup_failures_total{source="api_call"}[5m]) * 60
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 50
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Total failed requests are so high in ip_lookup_failures_total
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: ee6sogrsjd8n4d
+          title: Production Pod Waiting
+          condition: E
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(kube_pod_container_status_waiting_reason) by (pod, container, reason)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: D
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                datasource:
+                    type: prometheus
+                    uid: ee6ph590sov7ke
+                editorMode: code
+                expr: sum(kube_pod_container_status_waiting) by (pod)
+                hide: false
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: D
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: D
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: C
+                type: reduce
+            - refId: E
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: $B/$C == 1
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: E
+                type: math
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Production pod {{ index $labels "pod" }} stuck in waiting state
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: be6sommhijjlsa
+          title: Production High PVC Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(kubelet_volume_stats_used_bytes) by (persistentvolumeclaim, namespace)/sum(kubelet_volume_stats_capacity_bytes) by (persistentvolumeclaim, namespace)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                settings:
+                    mode: replaceNN
+                    replaceWithValue: 0
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.85
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Production persistent volume {{ index $labels "persistentvolumeclaim" }} high usage detected
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: be6sou9xvy4u8c
+          title: Production Pod Restart
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: (sum(rate(kube_pod_container_status_restarts_total[10m])) by (pod) * 600) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 1.5
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                      unloadEvaluator:
+                        params:
+                            - 1
+                        type: lt
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Production pod {{ index $labels "pod" }} excessive restarts detected
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: fe6sp2ldirg1sf
+          title: Production High ephemeral
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(container_fs_usage_bytes) by (pod) / sum(kube_pod_container_resource_limits{resource='ephemeral_storage'}) by (pod) * 100
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: mean
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 60
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Production high ephemeral storage on pod {{ index $labels "pod" }} detected
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: ae6spd4pmndvke
+          title: Production High CPU Throttling
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                editorMode: code
+                expr: sum(increase(container_cpu_cfs_throttled_periods_total{container!=""}[10m])) by (pod) /sum(increase(container_cpu_cfs_periods_total{container!=""}[10m])) by (pod)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: mean
+                refId: B
+                settings:
+                    mode: replaceNN
+                    replaceWithValue: 0
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.8
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            summary: Production pod {{ index $labels "pod" }} high cpu usage detected
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: ee6sqw2x6s1dse
+          title: Disk Space Used Basic
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 86400
+                to: 0
+              datasourceUid: ee6ph590sov7ke
+              model:
+                adhocFilters: []
+                datasource:
+                    type: prometheus
+                    uid: ee6ph590sov7ke
+                editorMode: code
+                expr: 100 - ((node_filesystem_avail_bytes{instance="5.34.205.88:9100",job="node-exporter",device!~'rootfs'} * 100) / node_filesystem_size_bytes{instance="5.34.205.88:9100",job="node-exporter",device!~'rootfs'})
+                format: time_series
+                instant: true
+                interval: ""
+                intervalFactor: 1
+                intervalMs: 15000
+                legendFormat: '{{mountpoint}}'
+                maxDataPoints: 43200
+                range: false
+                refId: A
+                step: 240
+            - refId: B
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 90
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: rYdddlPWk
+          panelId: 152
+          noDataState: OK
+          execErrState: OK
+          for: 2m
+          annotations:
+            __dashboardUid__: rYdddlPWk
+            __panelId__: "152"
+            summary: 'High disk usage detected, node: {{ $labels.instance }}'
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
