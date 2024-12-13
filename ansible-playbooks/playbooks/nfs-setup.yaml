@@ -19,10 +19,13 @@
         state: directory
         mode: '0777'
 
-    - name: Configure NFS exports
-      lineinfile:
+    - name: Configure NFS exports for each worker
+      blockinfile:
         path: /etc/exports
-        line: "{{ nfs_export_dir }} *(rw,sync,no_subtree_check,no_root_squash)"
+        block: |
+          {% for host in groups['workers'] %}
+          {{ nfs_export_dir }} {{ hostvars[host]['ansible_host'] }}(rw,sync,no_subtree_check,no_root_squash)
+          {% endfor %}
         state: present
 
     - name: Restart NFS server
