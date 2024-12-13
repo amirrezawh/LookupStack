@@ -50,21 +50,16 @@ jobs:
       with:
         version: 'latest'
 
-    - name: Configure Kubeconfig
+    - name: Configure Kubeconfig and deploy application
       env:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+
       run: |
         echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig.yaml
         export KUBECONFIG=kubeconfig.yaml
-        kubectl get nodes
-        helm list
-
-    - name: Deploy with Helm
-      env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        DB_PASS: ${{ secrets.DB_PASS }}
-      run: |
-        helm upgrade --install ip-lookup ./helm-chart \
+        helm upgrade ip-lookup ./charts/ip-lookup/ \
           --set secret.DATABASE_URL=$DATABASE_URL \
           --set secret.DB_PASS=$DB_PASS \
           --set image.repository=registry-ce4439d8b9-ip-lookup.apps.ir-central1.arvancaas.ir/ip-lookup \
