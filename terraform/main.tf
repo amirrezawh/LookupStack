@@ -7,7 +7,7 @@ terraform {
 }
 
 provider "arvan" {
-  api_key = "apikey 22ede7e2-de73-5922-8d3c-c03b570c97da"
+  api_key = "apikey"
 }
 
 resource "arvan_security_group" "terraform_security_group" {
