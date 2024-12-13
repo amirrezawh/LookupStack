@@ -51,8 +51,6 @@ jobs:
         version: 'latest'
 
     - name: Configure Kubeconfig
-      env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}
       run: |
         echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig.yaml
         export KUBECONFIG=kubeconfig.yaml
