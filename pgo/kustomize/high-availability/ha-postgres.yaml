@@ -1,7 +1,7 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
-  name: karnameh-pg
+  name: hippo-pg
 spec:
   postgresVersion: 16
   instances:
@@ -21,8 +21,8 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  postgres-operator.crunchydata.com/cluster: karnameh-pg
-                  postgres-operator.crunchydata.com/instance-set: pgha1
+                  postgres-operator.crunchydata.com/cluster: hippo-pg
+                  postgres-operator.crunchydata.com/instance-set: hippo
   backups:
     pgbackrest:
       repos:
