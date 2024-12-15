@@ -28,14 +28,14 @@ spec:
               - name: POSTGRES_URI
                 valueFrom:
                   secretKeyRef:
-                    name: karnameh-pg-pguser-karnameh-pg
+                    name: hippo-pg-pguser-hippo-pg
                     key: uri
 
             args:
             - /bin/sh
             - -c
             - |
-              BACKUP_FILE="/backup/karnameh-pg-backup-$(date +%F_%T).sql"
+              BACKUP_FILE="/backup/hippo-pg-backup-$(date +%F_%T).sql"
               echo "Starting backup..."
               
               pg_dump "$POSTGRES_URI" > $BACKUP_FILE
